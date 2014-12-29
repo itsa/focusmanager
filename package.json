@@ -1,0 +1,65 @@
+{
+    "name": "focusmanager",
+    "version": "0.0.1",
+    "description": "Node focusmanager",
+    "author": [
+        {
+            "name": "Marco Asbreuk",
+            "email": "marco@itsasbreuk.nl"
+        }
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/itsa/xxxxxxxx"
+    },
+    "bugs": {
+        "url": "https://github.com/itsa/xxxxxxxx/issues"
+    },
+    "keywords": [
+        "itsa",
+        "focusmanager"
+    ],
+    "main": "focusmanager.js",
+    "engines": {
+        "node": "*"
+    },
+    "dependencies": {
+        "vdom": "itsa/vdom",
+        "event-dom":"itsa/event-dom",
+        "polyfill": "itsa/polyfill",
+        "js-ext": "itsa/js-ext"
+    },
+    "devDependencies": {
+        "chai": "^1.9.1",
+        "istanbul": "^0.3.0",
+        "jshint": "^2.5.5",
+        "mocha": "^1.21.4"
+    },
+    "scripts": {
+        "pretest": "jshint  ./lib/*.js",
+        "test": "mocha tests/*.js  && istanbul cover $(which _mocha) -- tests/*.js",
+        "lint": "jshint ./lib/*.js"
+    },
+    "homepage": "http://itsa.github.io",
+    "maintainers": [
+        {
+            "name": "Marco Asbreuk",
+            "email": "marco@itsasbreuk.nl"
+        }
+    ],
+    "testling": {
+        "harness": "mocha",
+        "files": "tests/*.js",
+        "browsers": [
+            "ie/6..latest",
+            "chrome/22..latest",
+            "firefox/16..latest",
+            "safari/latest",
+            "opera/11.0..latest",
+            "iphone/6",
+            "ipad/6",
+            "android-browser/latest"
+        ]
+    },
+    "license": "New BSD"
+}

@@ -27,6 +27,7 @@
         "vdom": "itsa/vdom",
         "event-dom":"itsa/event-dom",
         "polyfill": "itsa/polyfill",
+        "utils": "itsa/utils",
         "js-ext": "itsa/js-ext"
     },
     "devDependencies": {

@@ -66,10 +66,12 @@ module.exports = function (window) {
         keys = actionkey.split('+');
         len = keys.length;
         lastIndex = len - 1;
-        enterPressedOnInput = (keyCode===13) &&
-                              (sourceNode.getTagName()==='INPUT') &&
-                              (inputType=sourceNode.getAttr('type').toLowerCase())
-                              ((inputType==='text') || (inputType==='password'));
+
+        if ((keyCode===13) && (sourceNode.getTagName()==='INPUT')) {
+            inputType = sourceNode.getAttr('type').toLowerCase();
+            enterPressedOnInput = (inputType==='text') || (inputType==='password');
+        }
+
         if (enterPressedOnInput) {
             // check if we need to press the primary button - if available
 /*jshint boss:true */
@@ -119,17 +121,24 @@ module.exports = function (window) {
 
     markAsFocussed = function(focusContainerNode, node) {
         console.log(NAME+'markAsFocussed');
+        var selector = getFocusManagerSelector(focusContainerNode),
+            index;
+
         focusContainerNode.getAll('[fm-lastitem]').removeAttr('fm-lastitem');
         node.setAttrs([
             {name: 'tabIndex', value: '0'},
             {name: 'fm-lastitem', value: true}
         ]);
+        // also store the lastitem's index --> in case the node gets removed,
+        // a refocus on the container will set the focus to the nearest item
+        index = focusContainerNode.getAll(selector).indexOf(node) || 0;
+        focusContainerNode.setAttr('fm-lastitem-bpk', index);
     };
 
     searchFocusNode = function(initialNode) {
         console.log(NAME+'searchFocusNode');
         var focusContainerNode = initialNode.hasAttr('fm-manage') ? initialNode : initialNode.inside('[fm-manage]'),
-            focusNode, alwaysDefault, fmAlwaysDefault;
+            focusNode, alwaysDefault, fmAlwaysDefault, selector, allFocusableNodes, index;
 
         if (focusContainerNode) {
             if (initialNode.matches(getFocusManagerSelector(focusContainerNode))) {
@@ -141,9 +150,25 @@ module.exports = function (window) {
 /*jshint boss:true */
                 alwaysDefault = ((fmAlwaysDefault=focusContainerNode.getAttr('fm-alwaysdefault')) && (fmAlwaysDefault.toLowerCase()==='true'));
 /*jshint boss:false */
-                focusNode = focusContainerNode.getElement(alwaysDefault ? '[fm-defaultitem="true"]' : '[fm-lastitem="true"]') ||
-                            focusContainerNode.getElement(alwaysDefault ? '[fm-lastitem="true"]' : '[fm-defaultitem="true"]') ||
-                            focusContainerNode.getElement(getFocusManagerSelector(focusContainerNode));
+                alwaysDefault && (focusNode=focusContainerNode.getElement('[fm-defaultitem="true"]'));
+                if (!focusNode) {
+                    // search for last item
+                    focusNode = focusContainerNode.getElement('[fm-lastitem="true"]');
+                    if (!focusNode) {
+                        // set `selector` right now: we might use it later on even when index is undefined
+                        selector = getFocusManagerSelector(focusContainerNode);
+                        // look at the lastitemindex of the focuscontainer
+                        index = focusContainerNode.getAttr('fm-lastitem-bpk');
+                        if (index!==undefined) {
+                            allFocusableNodes = focusContainerNode.getAll(selector);
+                            focusNode = allFocusableNodes[index];
+                        }
+                    }
+                }
+                // still not found and alwaysDefault was falsy: try the defualt node:
+                !focusNode && !alwaysDefault && (focusNode=focusContainerNode.getElement('[fm-defaultitem="true"]'));
+                // still not found: try the first focussable node (which we might find inside `allFocusableNodes`:
+                !focusNode && (focusNode = allFocusableNodes ? allFocusableNodes[0] : focusContainerNode.getElement(selector));
                 if (focusNode) {
                     markAsFocussed(focusContainerNode, focusNode);
                 }

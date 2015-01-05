@@ -35,7 +35,7 @@ module.exports = function (window) {
     var DOCUMENT = window.document,
         nodePlugin, FocusManager, Event, nextFocusNode, searchFocusNode, markAsFocussed, getFocusManagerSelector, setupEvents;
 
-    window._ITSAmodules || window.protectedProp('_ITSAmodules', {});
+    window._ITSAmodules || Object.protectedProp(window, '_ITSAmodules', {});
 
 /*jshint boss:true */
     if (FocusManager=window._ITSAmodules.FocusManager) {

@@ -120,7 +120,7 @@ module.exports = function (window) {
         // we also need to set the appropriate nodeData, so that when the itags re-render,
         // they don't reset this particular information
         focusContainerNode.getAll('[fm-lastitem]')
-                          .removeAttrs(['fm-lastitem', 'tabIndex'], true)
+                          .removeAttrs(['fm-lastitem', 'tabindex'], true)
                           .removeData('fm-tabindex');
 
         // also store the lastitem's index --> in case the node gets removed,
@@ -130,7 +130,7 @@ module.exports = function (window) {
         node.setData('fm-tabindex', true);
 
         node.setAttrs([
-            {name: 'tabIndex', value: '0'},
+            {name: 'tabindex', value: '0'},
             {name: 'fm-lastitem', value: true}
         ]);
     };

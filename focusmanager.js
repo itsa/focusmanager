@@ -28,7 +28,8 @@ var NAME = '[focusmanager]: ',
     DEFAULT_KEYDOWN = '9',
     FM_SELECTION = 'fm-selection',
     FM_SELECTION_START = FM_SELECTION+'start',
-    FM_SELECTION_END = FM_SELECTION+'end';
+    FM_SELECTION_END = FM_SELECTION+'end',
+    FOCUSSED = 'focussed';
 
 module.exports = function (window) {
 
@@ -115,17 +116,23 @@ module.exports = function (window) {
     markAsFocussed = function(focusContainerNode, node) {
         console.log(NAME+'markAsFocussed');
         var selector = getFocusManagerSelector(focusContainerNode),
-            index;
+            index = focusContainerNode.getAll(selector).indexOf(node) || 0;
+        // we also need to set the appropriate nodeData, so that when the itags re-render,
+        // they don't reset this particular information
+        focusContainerNode.getAll('[fm-lastitem]')
+                          .removeAttrs(['fm-lastitem', 'tabIndex'], true)
+                          .removeData('fm-tabindex');
 
-        focusContainerNode.getAll('[fm-lastitem]').removeAttr('fm-lastitem');
+        // also store the lastitem's index --> in case the node gets removed,
+        // or re-rendering itags which don't have the attribute-data.
+        // otherwise, a refocus on the container will set the focus to the nearest item
+        focusContainerNode.setData('fm-lastitem-bkp', index);
+        node.setData('fm-tabindex', 'true');
+
         node.setAttrs([
             {name: 'tabIndex', value: '0'},
             {name: 'fm-lastitem', value: true}
         ]);
-        // also store the lastitem's index --> in case the node gets removed,
-        // a refocus on the container will set the focus to the nearest item
-        index = focusContainerNode.getAll(selector).indexOf(node) || 0;
-        focusContainerNode.setAttr('fm-lastitem-bpk', index);
     };
 
     searchFocusNode = function(initialNode) {
@@ -151,7 +158,7 @@ module.exports = function (window) {
                         // set `selector` right now: we might use it later on even when index is undefined
                         selector = getFocusManagerSelector(focusContainerNode);
                         // look at the lastitemindex of the focuscontainer
-                        index = focusContainerNode.getAttr('fm-lastitem-bpk');
+                        index = focusContainerNode.getData('fm-lastitem-bkp');
                         if (index!==undefined) {
                             allFocusableNodes = focusContainerNode.getAll(selector);
                             focusNode = allFocusableNodes[index];
@@ -219,9 +226,11 @@ module.exports = function (window) {
             var node = e.target,
                 body = DOCUMENT.body;
             if (node && node.removeAttr) {
-                node.removeAttr('tabIndex');
                 do {
-                    node.removeClass('focussed');
+                    // we also need to set the appropriate nodeData, so that when the itags re-render,
+                    // they don't reset this particular information
+                    node.removeData(FOCUSSED);
+                    node.removeClass(FOCUSSED, null, null, true);
                     node = (node===body) ? null : node.getParent();
                 } while (node);
             }
@@ -233,7 +242,10 @@ module.exports = function (window) {
                 body = DOCUMENT.body;
             if (node && node.setClass) {
                 do {
-                    node.setClass('focussed');
+                    // we also need to set the appropriate nodeData, so that when the itags re-render,
+                    // they don't reset this particular information
+                    node.setData(FOCUSSED);
+                    node.setClass(FOCUSSED, null, null, true);
                     node = (node===body) ? null : node.getParent();
                 } while (node);
             }

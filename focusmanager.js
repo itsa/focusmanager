@@ -56,7 +56,7 @@ module.exports = function (window) {
     nextFocusNode = function(e, keyCode, actionkey, focusContainerNode, sourceNode, selector, downwards) {
         console.log(NAME+'nextFocusNode');
         var keys, lastIndex, i, specialKeysMatch, specialKey, len, enterPressedOnInput, primaryButtons,
-            inputType, foundNode, formNode, primaryonenter;
+            inputType, foundNode, formNode, primaryonenter, noloop;
         keys = actionkey.split('+');
         len = keys.length;
         lastIndex = len - 1;
@@ -103,11 +103,13 @@ module.exports = function (window) {
             }
         }
         if (specialKeysMatch) {
+            noloop = focusContainerNode.getAttr('fm-noloop');
+            noloop = noloop && (noloop.toLowerCase()==='true');
             if (downwards) {
-                return sourceNode.next(selector) || sourceNode.first(selector);
+                return sourceNode.next(selector) || (noloop ? sourceNode.last(selector) : sourceNode.first(selector));
             }
             else {
-                return sourceNode.previous(selector) || sourceNode.last(selector);
+                return sourceNode.previous(selector) || (noloop ? sourceNode.first(selector) : sourceNode.last(selector));
             }
         }
         return false;
@@ -324,12 +326,22 @@ module.exports = function (window) {
 
     window._ITSAmodules.FocusManager = FocusManager = nodePlugin.definePlugin('fm', {manage: 'true'});
 
+    /**
+     * In case of a manual focus (node.focus()) the node will fire an `manualfocus`-event
+     * which can be prevented.
+     * @event manualfocus
+    */
+    Event.defineEvent('UI:manualfocus')
+         .defaultFn(function(e) {
+             e.target._focus();
+         });
+
     (function(HTMLElementPrototype) {
 
         HTMLElementPrototype._focus = HTMLElementPrototype.focus;
         HTMLElementPrototype.focus = function() {
             console.log(NAME+'focus');
-            searchFocusNode(this)._focus();
+            searchFocusNode(this).emit('manualfocus');
         };
 
     }(window.HTMLElement.prototype));

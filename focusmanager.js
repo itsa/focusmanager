@@ -17,13 +17,14 @@ require('polyfill');
 
 var NAME = '[focusmanager]: ',
     async = require('utils').async,
+    createHashMap = require('js-ext/extra/hashmap.js').createMap,
     DEFAULT_SELECTOR = 'input, button, select, textarea, .focusable',
-    SPECIAL_KEYS = {
+    SPECIAL_KEYS = createHashMap({
         shift: 'shiftKey',
         ctrl: 'ctrlKey',
         cmd: 'metaKey',
         alt: 'altKey'
-    },
+    }),
     DEFAULT_KEYUP = 'shift+9',
     DEFAULT_KEYDOWN = '9',
     FM_SELECTION = 'fm-selection',
@@ -36,7 +37,7 @@ module.exports = function (window) {
     var DOCUMENT = window.document,
         nodePlugin, FocusManager, Event, nextFocusNode, searchFocusNode, markAsFocussed, getFocusManagerSelector, setupEvents;
 
-    window._ITSAmodules || Object.protectedProp(window, '_ITSAmodules', {});
+    window._ITSAmodules || Object.protectedProp(window, '_ITSAmodules', createHashMap());
 
 /*jshint boss:true */
     if (FocusManager=window._ITSAmodules.FocusManager) {

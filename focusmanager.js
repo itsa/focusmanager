@@ -19,12 +19,13 @@ var NAME = '[focusmanager]: ',
     async = require('utils').async,
     createHashMap = require('js-ext/extra/hashmap.js').createMap,
     DEFAULT_SELECTOR = 'input, button, select, textarea, .focusable',
-    SPECIAL_KEYS = createHashMap({
+    // SPECIAL_KEYS needs to be a native Object --> we need .some()
+    SPECIAL_KEYS = {
         shift: 'shiftKey',
         ctrl: 'ctrlKey',
         cmd: 'metaKey',
         alt: 'altKey'
-    }),
+    },
     DEFAULT_KEYUP = 'shift+9',
     DEFAULT_KEYDOWN = '9',
     FM_SELECTION = 'fm-selection',

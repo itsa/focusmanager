@@ -40,6 +40,7 @@ module.exports = function (window) {
 
     window._ITSAmodules || Object.protectedProp(window, '_ITSAmodules', createHashMap());
 
+    require('window.ext')(window);
 /*jshint boss:true */
     if (FocusManager=window._ITSAmodules.FocusManager) {
 /*jshint boss:false */
@@ -335,7 +336,10 @@ module.exports = function (window) {
     */
     Event.defineEvent('UI:manualfocus')
          .defaultFn(function(e) {
+             var leftScroll = window.getScrollLeft(),
+                 topScroll = window.getScrollTop();
              e.target._focus();
+             window.scrollTo(leftScroll, topScroll);
          });
 
     (function(HTMLElementPrototype) {

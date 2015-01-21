@@ -28,7 +28,7 @@
         "event-dom":"itsa/event-dom",
         "polyfill": "itsa/polyfill",
         "utils": "itsa/utils",
-        "window-ext", "itsa/window-ext",
+        "window-ext": "itsa/window-ext",
         "js-ext": "itsa/js-ext"
     },
     "devDependencies": {

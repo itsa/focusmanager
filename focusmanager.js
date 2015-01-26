@@ -351,7 +351,7 @@ module.exports = function (window) {
         HTMLElementPrototype._focus = HTMLElementPrototype.focus;
         HTMLElementPrototype.focus = function() {
             console.log(NAME+'focus');
-            searchFocusNode(this).emit('manualfocus');
+            searchFocusNode(this).emit('UI:manualfocus');
         };
 
     }(window.HTMLElement.prototype));

@@ -36,7 +36,7 @@ var NAME = '[focusmanager]: ',
 module.exports = function (window) {
 
     var DOCUMENT = window.document,
-        nodePlugin, FocusManager, Event, nextFocusNode, searchFocusNode, markAsFocussed, getFocusManagerSelector, setupEvents;
+        nodePlugin, FocusManager, Event, nextFocusNode, searchFocusNode, markAsFocussed, getFocusManagerSelector, setupEvents, defineFocusEvent;
 
     window._ITSAmodules || Object.protectedProp(window, '_ITSAmodules', createHashMap());
 
@@ -329,29 +329,36 @@ module.exports = function (window) {
 
     window._ITSAmodules.FocusManager = FocusManager = nodePlugin.definePlugin('fm', {manage: 'true'});
 
-    /**
-     * In case of a manual focus (node.focus()) the node will fire an `manualfocus`-event
-     * which can be prevented.
-     * @event manualfocus
-    */
-    Event.defineEvent('UI:manualfocus')
-         .defaultFn(function(e) {
-             var node = e.target,
-                 leftScroll = window.getScrollLeft(),
-                 topScroll = window.getScrollTop();
-             node._focus();
-             // reset winscroll:
-             window.scrollTo(leftScroll, topScroll);
-             // make sure the node is inside the viewport:
-             // node.forceIntoView();
-         });
+    defineFocusEvent = function(customevent) {
+        Event.defineEvent(customevent)
+             .defaultFn(function(e) {
+                 var node = e.target,
+                     leftScroll = window.getScrollLeft(),
+                     topScroll = window.getScrollTop();
+                 node._focus();
+                 // reset winscroll:
+                 window.scrollTo(leftScroll, topScroll);
+                 // make sure the node is inside the viewport:
+                 // node.forceIntoView();
+             });
+    };
 
     (function(HTMLElementPrototype) {
 
         HTMLElementPrototype._focus = HTMLElementPrototype.focus;
         HTMLElementPrototype.focus = function() {
             console.log(NAME+'focus');
-            searchFocusNode(this).emit('UI:manualfocus');
+            /**
+             * In case of a manual focus (node.focus()) the node will fire an `manualfocus`-event
+             * which can be prevented.
+             * @event manualfocus
+            */
+            var focusNode = searchFocusNode(this),
+                emitterName = focusNode._emitterName,
+                customevent = emitterName+':manualfocus';
+
+            Event._ce[customevent] || defineFocusEvent(customevent);
+            focusNode.emit('manualfocus');
         };
 
     }(window.HTMLElement.prototype));

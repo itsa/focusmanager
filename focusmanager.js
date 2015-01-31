@@ -263,8 +263,8 @@ module.exports = function (window) {
             node.hasFocus() || node.focus();
         }, 'button');
 
-        Event.after('tap', function(e) {
-            console.log(NAME+'after tap-event');
+        Event.after(['tap', 'click'], function(e) {
+            console.log(NAME+'after tap/click-event');
             var focusNode = e.target,
                 focusContainerNode;
 

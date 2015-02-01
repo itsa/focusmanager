@@ -213,6 +213,7 @@ module.exports = function (window) {
                 }
                 if (focusNode) {
                     e.preventDefaultContinue();
+                    e.preventRender(); // don't double render --> focus does this
                     // prevent default action --> we just want to re-focus, but we DO want afterlisteners
                     // to be handled in the after-listener: someone else might want to halt the keydown event.
                     sourceNode.matches(selector) && (e._focusNode=focusNode);
@@ -223,7 +224,10 @@ module.exports = function (window) {
         Event.after('keydown', function(e) {
             console.log(NAME+'after keydown-event');
             var focusNode = e._focusNode;
-            focusNode && focusNode.focus && focusNode.focus();
+            if (focusNode && focusNode.focus) {
+                e.preventRender(); // don't double render --> focus does this
+                focusNode.focus();
+            }
         });
 
         Event.after('blur', function(e) {
@@ -260,10 +264,13 @@ module.exports = function (window) {
         Event.after(['mousedown', 'press'], function(e) {
             console.log(NAME+'after focus-event');
             var node = e.target;
-            node.hasFocus() || node.focus();
+            if (!node.hasFocus()) {
+                e.preventRender(); // don't double render --> focus does this
+                node.focus();
+            }
         }, 'button');
 
-        Event.after('tap', function(e) {
+        Event.after(['tap', 'click'], function(e) {
             console.log(NAME+'after tap-event');
             var focusNode = e.target,
                 focusContainerNode;
@@ -279,6 +286,7 @@ module.exports = function (window) {
                     markAsFocussed(focusContainerNode, focusNode);
                 }
                 else {
+                    e.preventRender(); // don't double render --> focus does this
                     focusNode.focus();
                 }
             }
@@ -356,7 +364,6 @@ module.exports = function (window) {
             var focusNode = searchFocusNode(this),
                 emitterName = focusNode._emitterName,
                 customevent = emitterName+':manualfocus';
-
             Event._ce[customevent] || defineFocusEvent(customevent);
             focusNode.emit('manualfocus');
         };

@@ -261,7 +261,7 @@ module.exports = function (window) {
         });
 
         // focus-fix for keeping focus when a mouse gets down for a longer time
-        Event.after(['mousedown', 'press'], function(e) {
+        Event.after('mousedown', function(e) {
             console.log(NAME+'after focus-event');
             var node = e.target;
             if (!node.hasFocus()) {
@@ -270,7 +270,7 @@ module.exports = function (window) {
             }
         }, 'button');
 
-        Event.after(['tap', 'click'], function(e) {
+        Event.after('tap', function(e) {
             console.log(NAME+'after tap-event');
             var focusNode = e.target,
                 focusContainerNode;
@@ -290,7 +290,7 @@ module.exports = function (window) {
                     focusNode.focus();
                 }
             }
-        });
+        }, null, null, true);
 
         Event.after(['keypress', 'mouseup', 'panup', 'mousedown', 'pandown'], function(e) {
             console.log(NAME+'after '+e.type+'-event');
@@ -354,7 +354,7 @@ module.exports = function (window) {
     (function(HTMLElementPrototype) {
 
         HTMLElementPrototype._focus = HTMLElementPrototype.focus;
-        HTMLElementPrototype.focus = function() {
+        HTMLElementPrototype.focus = function(noRender) {
             console.log(NAME+'focus');
             /**
              * In case of a manual focus (node.focus()) the node will fire an `manualfocus`-event
@@ -365,7 +365,7 @@ module.exports = function (window) {
                 emitterName = focusNode._emitterName,
                 customevent = emitterName+':manualfocus';
             Event._ce[customevent] || defineFocusEvent(customevent);
-            focusNode.emit('manualfocus');
+            focusNode.emit('manualfocus', noRender ? {_noRender: true} : null);
         };
 
     }(window.HTMLElement.prototype));

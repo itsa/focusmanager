@@ -48,7 +48,7 @@ module.exports = function (window) {
     }
 
     nodePlugin = require('vdom')(window).Plugins.nodePlugin;
-    Event = require('event-dom')(window);
+    Event = require('event-mobile')(window);
 
     getFocusManagerSelector = function(focusContainerNode) {
         var selector = focusContainerNode.getAttr('fm-manage');

@@ -81,7 +81,7 @@ module.exports = function (window) {
                 });
                 if (foundNode) {
                     async(function() {
-                        Event.emit(foundNode, 'UI:click');
+                        Event.emit(foundNode, 'UI:tap');
                         // _buttonPressed make event-dom to simulate a pressed button for 200ms
                         Event.emit(foundNode, 'UI:tap', {_buttonPressed: true});
                         // if the button is of type `submit`, then try to submit the form
@@ -146,9 +146,10 @@ module.exports = function (window) {
             focusNode, alwaysDefault, fmAlwaysDefault, selector, allFocusableNodes, index;
 
         if (focusContainerNode) {
-            if (initialNode.matches(getFocusManagerSelector(focusContainerNode))) {
-                markAsFocussed(focusContainerNode, initialNode);
-                focusNode = initialNode;
+            selector = getFocusManagerSelector(focusContainerNode);
+            focusNode = initialNode.matches(selector) ? initialNode : initialNode.inside(selector);
+            if (focusNode && focusContainerNode.contains(focusNode)) {
+                markAsFocussed(focusContainerNode, focusNode);
             }
             else {
                 // find the right node that should get focus
@@ -160,8 +161,6 @@ module.exports = function (window) {
                     // search for last item
                     focusNode = focusContainerNode.getElement('[fm-lastitem="true"]');
                     if (!focusNode) {
-                        // set `selector` right now: we might use it later on even when index is undefined
-                        selector = getFocusManagerSelector(focusContainerNode);
                         // look at the lastitemindex of the focuscontainer
                         index = focusContainerNode.getData('fm-lastitem-bkp');
                         if (index!==undefined) {
@@ -274,7 +273,6 @@ module.exports = function (window) {
             console.log(NAME+'after tap-event');
             var focusNode = e.target,
                 focusContainerNode;
-
             if (focusNode && focusNode.inside) {
                 focusContainerNode = focusNode.hasAttr('fm-manage') ? focusNode : focusNode.inside('[fm-manage]');
             }
@@ -286,7 +284,7 @@ module.exports = function (window) {
                     markAsFocussed(focusContainerNode, focusNode);
                 }
                 else {
-                    e.preventRender(); // don't double render --> focus does this
+                    e.preventRender(); // don't double render --> let focus do this
                     focusNode.focus();
                 }
             }

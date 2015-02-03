@@ -25,7 +25,7 @@
     },
     "dependencies": {
         "vdom": "itsa/vdom",
-        "event-dom":"itsa/event-dom",
+        "event-mobile":"itsa/event-mobile",
         "polyfill": "itsa/polyfill",
         "utils": "itsa/utils",
         "window-ext": "itsa/window-ext",

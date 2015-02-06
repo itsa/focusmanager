@@ -109,10 +109,10 @@ module.exports = function (window) {
             noloop = focusContainerNode.getAttr('fm-noloop');
             noloop = noloop && (noloop.toLowerCase()==='true');
             if (downwards) {
-                return sourceNode.next(selector) || (noloop ? sourceNode.last(selector) : sourceNode.first(selector));
+                return sourceNode.next(selector, focusContainerNode) || (noloop ? sourceNode.last(selector, focusContainerNode) : sourceNode.first(selector, focusContainerNode));
             }
             else {
-                return sourceNode.previous(selector) || (noloop ? sourceNode.first(selector) : sourceNode.last(selector));
+                return sourceNode.previous(selector, focusContainerNode) || (noloop ? sourceNode.first(selector, focusContainerNode) : sourceNode.last(selector, focusContainerNode));
             }
         }
         return false;
@@ -133,11 +133,10 @@ module.exports = function (window) {
         // otherwise, a refocus on the container will set the focus to the nearest item
         focusContainerNode.setData('fm-lastitem-bkp', index);
         node.setData('fm-tabindex', true);
-
         node.setAttrs([
             {name: 'tabindex', value: '0'},
             {name: 'fm-lastitem', value: true}
-        ]);
+        ], true);
     };
 
     searchFocusNode = function(initialNode) {
@@ -184,6 +183,8 @@ module.exports = function (window) {
         else {
             focusNode = initialNode;
         }
+console.warn('searchFocusNode found the node to be focussed:');
+console.warn(focusNode);
         return focusNode;
     };
 
@@ -301,8 +302,8 @@ module.exports = function (window) {
                 // key was pressed inside a focusmanagable container
                 selector = getFocusManagerSelector(focusContainerNode);
                 if (sourceNode.matches(selector)) {
-                    sourceNode.setAttr(FM_SELECTION_START, sourceNode.selectionStart || '0')
-                              .setAttr(FM_SELECTION_END, sourceNode.selectionEnd || '0');
+                    sourceNode.setAttr(FM_SELECTION_START, sourceNode.selectionStart || '0', true)
+                              .setAttr(FM_SELECTION_END, sourceNode.selectionEnd || '0', true);
                 }
             }
         }, 'input[type="text"], textarea');
@@ -352,14 +353,14 @@ module.exports = function (window) {
     (function(HTMLElementPrototype) {
 
         HTMLElementPrototype._focus = HTMLElementPrototype.focus;
-        HTMLElementPrototype.focus = function(noRender) {
+        HTMLElementPrototype.focus = function(noRender, noRefocus) {
             console.log(NAME+'focus');
             /**
              * In case of a manual focus (node.focus()) the node will fire an `manualfocus`-event
              * which can be prevented.
              * @event manualfocus
             */
-            var focusNode = searchFocusNode(this),
+            var focusNode = noRefocus ? this : searchFocusNode(this),
                 emitterName = focusNode._emitterName,
                 customevent = emitterName+':manualfocus';
             Event._ce[customevent] || defineFocusEvent(customevent);

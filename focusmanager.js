@@ -18,7 +18,7 @@ require('polyfill');
 var NAME = '[focusmanager]: ',
     async = require('utils').async,
     createHashMap = require('js-ext/extra/hashmap.js').createMap,
-    DEFAULT_SELECTOR = 'input, button, select, textarea, .focusable',
+    DEFAULT_SELECTOR = 'input, button, select, textarea, .focusable, [fm-manage]',
     // SPECIAL_KEYS needs to be a native Object --> we need .some()
     SPECIAL_KEYS = {
         shift: 'shiftKey',
@@ -28,6 +28,8 @@ var NAME = '[focusmanager]: ',
     },
     DEFAULT_KEYUP = 'shift+9',
     DEFAULT_KEYDOWN = '9',
+    DEFAULT_ENTER = '39',
+    DEFAULT_LEAVE = '27',
     FM_SELECTION = 'fm-selection',
     FM_SELECTION_START = FM_SELECTION+'start',
     FM_SELECTION_END = FM_SELECTION+'end',
@@ -56,10 +58,10 @@ module.exports = function (window) {
         return selector;
     };
 
-    nextFocusNode = function(e, keyCode, actionkey, focusContainerNode, sourceNode, selector, downwards) {
+    nextFocusNode = function(e, keyCode, actionkey, focusContainerNode, sourceNode, selector, downwards, initialSourceNode) {
         console.log(NAME+'nextFocusNode');
         var keys, lastIndex, i, specialKeysMatch, specialKey, len, enterPressedOnInput, primaryButtons,
-            inputType, foundNode, formNode, primaryonenter, noloop;
+            inputType, foundNode, formNode, primaryonenter, noloop, nodeHit, foundContainer;
         keys = actionkey.split('+');
         len = keys.length;
         lastIndex = len - 1;
@@ -109,10 +111,20 @@ module.exports = function (window) {
             noloop = focusContainerNode.getAttr('fm-noloop');
             noloop = noloop && (noloop.toLowerCase()==='true');
             if (downwards) {
-                return sourceNode.next(selector, focusContainerNode) || (noloop ? sourceNode.last(selector, focusContainerNode) : sourceNode.first(selector, focusContainerNode));
+                nodeHit = sourceNode.next(selector, focusContainerNode) || (noloop ? sourceNode.last(selector, focusContainerNode) : sourceNode.first(selector, focusContainerNode));
             }
             else {
-                return sourceNode.previous(selector, focusContainerNode) || (noloop ? sourceNode.first(selector, focusContainerNode) : sourceNode.last(selector, focusContainerNode));
+                nodeHit = sourceNode.previous(selector, focusContainerNode) || (noloop ? sourceNode.first(selector, focusContainerNode) : sourceNode.last(selector, focusContainerNode));
+            }
+            if (nodeHit===sourceNode) {
+                // cannot found another, return itself, BUT return `initialSourceNode` if it is available
+                return initialSourceNode || sourceNode;
+            }
+            else {
+                foundContainer = nodeHit.inside('[fm-manage]');
+                // only if `nodeHit` is inside the runniong focusContainer, we may return it,
+                // otherwise look further
+                return (foundContainer===focusContainerNode) ? nodeHit : nextFocusNode(e, keyCode, actionkey, focusContainerNode, nodeHit, selector, downwards, sourceNode);
             }
         }
         return false;
@@ -183,8 +195,6 @@ module.exports = function (window) {
         else {
             focusNode = initialNode;
         }
-console.warn('searchFocusNode found the node to be focussed:');
-console.warn(focusNode);
         return focusNode;
     };
 
@@ -195,7 +205,7 @@ console.warn(focusNode);
             var focusContainerNode,
                 sourceNode = e.target,
                 node = sourceNode.getParent(),
-                selector, keyCode, actionkey, focusNode;
+                selector, keyCode, actionkey, focusNode, keys, len, lastIndex, specialKeysMatch, i, specialKey;
 
             focusContainerNode = sourceNode.inside('[fm-manage]');
             if (focusContainerNode) {
@@ -210,6 +220,54 @@ console.warn(focusNode);
                     // check for keyup:
                     actionkey = node.getAttr('fm-keyup') || DEFAULT_KEYUP;
                     focusNode = nextFocusNode(e, keyCode, actionkey, focusContainerNode, sourceNode, selector);
+                }
+                if (!focusNode) {
+                    // check for keyenter, but only when e.target equals a focusmanager:
+                    if (sourceNode.matches('[fm-manage]')) {
+                        actionkey = node.getAttr('fm-enter') || DEFAULT_ENTER;
+                        keys = actionkey.split('+');
+                        len = keys.length;
+                        lastIndex = len - 1;
+                        // double == --> keyCode is number, keys is a string
+                        if (keyCode==keys[lastIndex]) {
+                            // posible keyup --> check if special characters match:
+                            specialKeysMatch = true;
+                            SPECIAL_KEYS.some(function(value) {
+                                specialKeysMatch = !e[value];
+                                return !specialKeysMatch;
+                            });
+                            for (i=lastIndex-1; (i>=0) && !specialKeysMatch; i--) {
+                                specialKey = keys[i].toLowerCase();
+                                specialKeysMatch = e[SPECIAL_KEYS[specialKey]];
+                            }
+                        }
+                        if (specialKeysMatch) {
+                            focusNode = searchFocusNode(sourceNode);
+                        }
+                    }
+                }
+                if (!focusNode) {
+                    // check for keyleave:
+                    actionkey = node.getAttr('fm-leave') || DEFAULT_LEAVE;
+                    keys = actionkey.split('+');
+                    len = keys.length;
+                    lastIndex = len - 1;
+                    // double == --> keyCode is number, keys is a string
+                    if (keyCode==keys[lastIndex]) {
+                        // posible keyup --> check if special characters match:
+                        specialKeysMatch = true;
+                        SPECIAL_KEYS.some(function(value) {
+                            specialKeysMatch = !e[value];
+                            return !specialKeysMatch;
+                        });
+                        for (i=lastIndex-1; (i>=0) && !specialKeysMatch; i--) {
+                            specialKey = keys[i].toLowerCase();
+                            specialKeysMatch = e[SPECIAL_KEYS[specialKey]];
+                        }
+                    }
+                    if (specialKeysMatch) {
+                        focusNode = focusContainerNode;
+                    }
                 }
                 if (focusNode) {
                     e.preventDefaultContinue();

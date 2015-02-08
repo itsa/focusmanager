@@ -151,16 +151,34 @@ module.exports = function (window) {
         ], true);
     };
 
-    searchFocusNode = function(initialNode) {
+    searchFocusNode = function(initialNode, deeper) {
         console.log(NAME+'searchFocusNode');
         var focusContainerNode = initialNode.hasAttr('fm-manage') ? initialNode : initialNode.inside('[fm-manage]'),
-            focusNode, alwaysDefault, fmAlwaysDefault, selector, allFocusableNodes, index;
+            focusNode, alwaysDefault, fmAlwaysDefault, selector, allFocusableNodes, index, parentContainerNode, parentSelector;
 
         if (focusContainerNode) {
             selector = getFocusManagerSelector(focusContainerNode);
             focusNode = initialNode.matches(selector) ? initialNode : initialNode.inside(selector);
-            if (focusNode && focusContainerNode.contains(focusNode)) {
-                markAsFocussed(focusContainerNode, focusNode);
+            // focusNode can only be equal focusContainerNode when focusContainerNode lies with a focusnode itself with that particular selector:
+console.warn('fase A');
+            if (focusNode===focusContainerNode) {
+console.warn('fase B');
+                parentContainerNode = focusNode.inside(selector);
+console.warn(parentContainerNode);
+                if (parentContainerNode) {
+                    parentSelector = getFocusManagerSelector(parentContainerNode);
+console.warn(parentSelector);
+                    if (!focusNode.matches(parentSelector) || deeper) {
+                        focusNode = null;
+                    }
+                }
+                else {
+                    focusNode = null;
+                }
+console.warn(focusNode);
+            }
+            if (focusNode && focusContainerNode.contains(focusNode, true)) {
+                markAsFocussed(parentContainerNode || focusContainerNode, focusNode);
             }
             else {
                 // find the right node that should get focus
@@ -185,7 +203,7 @@ module.exports = function (window) {
                 // still not found: try the first focussable node (which we might find inside `allFocusableNodes`:
                 !focusNode && (focusNode = allFocusableNodes ? allFocusableNodes[0] : focusContainerNode.getElement(selector));
                 if (focusNode) {
-                    markAsFocussed(focusContainerNode, focusNode);
+                    markAsFocussed(parentContainerNode || focusContainerNode, focusNode);
                 }
                 else {
                     focusNode = initialNode;
@@ -222,14 +240,17 @@ module.exports = function (window) {
                     focusNode = nextFocusNode(e, keyCode, actionkey, focusContainerNode, sourceNode, selector);
                 }
                 if (!focusNode) {
+console.warn('fase 1');
                     // check for keyenter, but only when e.target equals a focusmanager:
                     if (sourceNode.matches('[fm-manage]')) {
+console.warn('fase 2');
                         actionkey = node.getAttr('fm-enter') || DEFAULT_ENTER;
                         keys = actionkey.split('+');
                         len = keys.length;
                         lastIndex = len - 1;
                         // double == --> keyCode is number, keys is a string
                         if (keyCode==keys[lastIndex]) {
+console.warn('fase 3');
                             // posible keyup --> check if special characters match:
                             specialKeysMatch = true;
                             SPECIAL_KEYS.some(function(value) {
@@ -241,8 +262,11 @@ module.exports = function (window) {
                                 specialKeysMatch = e[SPECIAL_KEYS[specialKey]];
                             }
                         }
+console.warn('fase 4');
                         if (specialKeysMatch) {
-                            focusNode = searchFocusNode(sourceNode);
+console.warn('fase 5');
+                            focusNode = searchFocusNode(sourceNode, true);
+console.warn(focusNode);
                         }
                     }
                 }

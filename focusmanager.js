@@ -111,6 +111,8 @@ module.exports = function (window) {
         if (specialKeysMatch) {
             noloop = focusContainerNode.getAttr('fm-noloop');
             noloop = noloop && (noloop.toLowerCase()==='true');
+            // in case sourceNode is an innernode of a selector, we need to start from the selector:
+            sourceNode.matches(selector) || (sourceNode=sourceNode.inside(selector));
             if (downwards) {
                 nodeHit = sourceNode.next(selector, focusContainerNode) || (noloop ? sourceNode.last(selector, focusContainerNode) : sourceNode.first(selector, focusContainerNode));
             }
@@ -294,7 +296,7 @@ module.exports = function (window) {
                     e.preventRender(); // don't double render --> focus does this
                     // prevent default action --> we just want to re-focus, but we DO want afterlisteners
                     // to be handled in the after-listener: someone else might want to halt the keydown event.
-                    sourceNode.matches(selector) && (e._focusNode=focusNode);
+                    e._focusNode = focusNode;
                 }
             }
         });

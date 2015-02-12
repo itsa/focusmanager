@@ -310,25 +310,23 @@ module.exports = function (window) {
             }
         });
 
-        Event.after('blur', function(e) {
-            console.log(NAME+'after blur-event');
-            var node = e.target,
-                body = DOCUMENT.body;
-            if (node && node.removeAttr) {
-                do {
-                    // we also need to set the appropriate nodeData, so that when the itags re-render,
-                    // they don't reset this particular information
-                    node.removeData(FOCUSSED);
-                    node.removeClass(FOCUSSED, null, null, true);
-                    node = (node===body) ? null : node.getParent();
-                } while (node);
-            }
-        });
-
         Event.after('focus', function(e) {
             console.log(NAME+'after focus-event');
             var node = e.target,
-                body = DOCUMENT.body;
+                body = DOCUMENT.body,
+                cleanFocussedData = function(element, loop) {
+                    if (element.removeData) {
+                        do {
+                            // we also need to set the appropriate nodeData, so that when the itags re-render,
+                            // they don't reset this particular information
+                            element.removeData(FOCUSSED);
+                            element.removeClass(FOCUSSED, null, null, true);
+                            element = (element===body) ? null : element.getParent();
+                        } while (element && loop);
+                    }
+                };
+            // first, unfocus currently focussed items and up the tree
+            DOCUMENT.getAll('.'+FOCUSSED, true).forEach(cleanFocussedData);
             if (node && node.setClass) {
                 do {
                     // we also need to set the appropriate nodeData, so that when the itags re-render,
@@ -338,7 +336,7 @@ module.exports = function (window) {
                     node = (node===body) ? null : node.getParent();
                 } while (node);
             }
-        });
+        }, true); // set in front: we need to make use of the previous DOCUMENT._activeElement, before it gets updated by event-dom
 
         // focus-fix for keeping focus when a mouse gets down for a longer time
         Event.after('mousedown', function(e) {
@@ -354,6 +352,9 @@ module.exports = function (window) {
             console.log(NAME+'after tap-event');
             var focusNode = e.target,
                 focusContainerNode;
+            if (e._noFocus) {
+                return;
+            }
             if (focusNode && focusNode.inside) {
                 focusContainerNode = focusNode.hasAttr('fm-manage') ? focusNode : focusNode.inside('[fm-manage]');
             }

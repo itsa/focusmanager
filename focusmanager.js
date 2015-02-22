@@ -18,7 +18,7 @@ require('polyfill');
 var NAME = '[focusmanager]: ',
     async = require('utils').async,
     createHashMap = require('js-ext/extra/hashmap.js').createMap,
-    DEFAULT_SELECTOR = 'input, button, select, textarea, .focusable, [fm-manage]',
+    DEFAULT_SELECTOR = 'input, button, select, textarea, .focusable, [fm-manage], [itag-formelement="true"]',
     // SPECIAL_KEYS needs to be a native Object --> we need .some()
     SPECIAL_KEYS = {
         shift: 'shiftKey',
@@ -38,7 +38,7 @@ var NAME = '[focusmanager]: ',
 module.exports = function (window) {
 
     var DOCUMENT = window.document,
-        nodePlugin, FocusManager, Event, nextFocusNode, searchFocusNode, markAsFocussed,
+        base, FocusManager, Event, nextFocusNode, searchFocusNode, markAsFocussed,
         resetLastValue, getFocusManagerSelector, setupEvents, defineFocusEvent;
 
     window._ITSAmodules || Object.protectedProp(window, '_ITSAmodules', createHashMap());
@@ -50,7 +50,7 @@ module.exports = function (window) {
         return FocusManager; // FocusManager was already created
     }
 
-    nodePlugin = require('vdom')(window).Plugins.nodePlugin;
+    base = require('vdom')(window).Plugins.Base;
     Event = require('event-mobile')(window);
 
     getFocusManagerSelector = function(focusContainerNode) {
@@ -415,7 +415,14 @@ module.exports = function (window) {
 
     setupEvents();
 
-    window._ITSAmodules.FocusManager = FocusManager = nodePlugin.definePlugin('fm', {manage: 'true'});
+    window._ITSAmodules.FocusManager = FocusManager = DOCUMENT.definePlugin('fm', null, {
+                attrs: {
+                    manage: 'string'
+                },
+                defaults: {
+                    manage: 'true'
+                }
+            });
 
     defineFocusEvent = function(customevent) {
         Event.defineEvent(customevent)

@@ -38,19 +38,20 @@ var NAME = '[focusmanager]: ',
 module.exports = function (window) {
 
     var DOCUMENT = window.document,
-        base, FocusManager, Event, nextFocusNode, searchFocusNode, markAsFocussed,
+        FocusManager, Event, nextFocusNode, searchFocusNode, markAsFocussed,
         resetLastValue, getFocusManagerSelector, setupEvents, defineFocusEvent;
 
     window._ITSAmodules || Object.protectedProp(window, '_ITSAmodules', createHashMap());
 
-    require('window-ext')(window);
 /*jshint boss:true */
     if (FocusManager=window._ITSAmodules.FocusManager) {
 /*jshint boss:false */
         return FocusManager; // FocusManager was already created
     }
 
-    base = require('vdom')(window).Plugins.Base;
+    require('window-ext')(window);
+    require('node-plugin')(window);
+
     Event = require('event-mobile')(window);
 
     getFocusManagerSelector = function(focusContainerNode) {

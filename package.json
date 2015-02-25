@@ -28,7 +28,7 @@
         "event-mobile":"itsa/event-mobile",
         "polyfill": "itsa/polyfill",
         "utils": "itsa/utils",
-        "node-plugin": "node-plugin",
+        "node-plugin": "itsa/node-plugin",
         "window-ext": "itsa/window-ext",
         "js-ext": "itsa/js-ext"
     },

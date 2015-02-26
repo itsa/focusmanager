@@ -245,6 +245,34 @@ module.exports = function (window) {
                     // check for keyenter, but only when e.target equals a focusmanager:
                     if (sourceNode.matches('[plugin-fm="true"]')) {
                         actionkey = focusContainerNode.plugin.fm.model.keyenter;
+                        if (actionkey) {
+                            keys = actionkey.split('+');
+                            len = keys.length;
+                            lastIndex = len - 1;
+                            // double == --> keyCode is number, keys is a string
+                            if (keyCode==keys[lastIndex]) {
+                                // posible keyup --> check if special characters match:
+                                specialKeysMatch = true;
+                                SPECIAL_KEYS.some(function(value) {
+                                    specialKeysMatch = !e[value];
+                                    return !specialKeysMatch;
+                                });
+                                for (i=lastIndex-1; (i>=0) && !specialKeysMatch; i--) {
+                                    specialKey = keys[i].toLowerCase();
+                                    specialKeysMatch = e[SPECIAL_KEYS[specialKey]];
+                                }
+                            }
+                            if (specialKeysMatch) {
+                                resetLastValue(sourceNode);
+                                focusNode = searchFocusNode(sourceNode, true);
+                            }
+                        }
+                    }
+                }
+                if (!focusNode) {
+                    // check for keyleave:
+                    actionkey = focusContainerNode.plugin.fm.model.keyleave;
+                    if (actionkey) {
                         keys = actionkey.split('+');
                         len = keys.length;
                         lastIndex = len - 1;
@@ -262,33 +290,9 @@ module.exports = function (window) {
                             }
                         }
                         if (specialKeysMatch) {
-                            resetLastValue(sourceNode);
-                            focusNode = searchFocusNode(sourceNode, true);
+                            resetLastValue(focusContainerNode);
+                            focusNode = focusContainerNode;
                         }
-                    }
-                }
-                if (!focusNode) {
-                    // check for keyleave:
-                    actionkey = focusContainerNode.plugin.fm.model.keyleave;
-                    keys = actionkey.split('+');
-                    len = keys.length;
-                    lastIndex = len - 1;
-                    // double == --> keyCode is number, keys is a string
-                    if (keyCode==keys[lastIndex]) {
-                        // posible keyup --> check if special characters match:
-                        specialKeysMatch = true;
-                        SPECIAL_KEYS.some(function(value) {
-                            specialKeysMatch = !e[value];
-                            return !specialKeysMatch;
-                        });
-                        for (i=lastIndex-1; (i>=0) && !specialKeysMatch; i--) {
-                            specialKey = keys[i].toLowerCase();
-                            specialKeysMatch = e[SPECIAL_KEYS[specialKey]];
-                        }
-                    }
-                    if (specialKeysMatch) {
-                        resetLastValue(focusContainerNode);
-                        focusNode = focusContainerNode;
                     }
                 }
                 if (focusNode) {

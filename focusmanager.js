@@ -28,8 +28,7 @@ var NAME = '[focusmanager]: ',
     },
     DEFAULT_KEYUP = 'shift+9',
     DEFAULT_KEYDOWN = '9',
-    // DEFAULT_ENTER = '39',
-    // DEFAULT_LEAVE = '27',
+    DEFAULT_NOLOOP = false,
     FM_SELECTION = 'fm-selection',
     FM_SELECTION_START = FM_SELECTION+'start',
     FM_SELECTION_END = FM_SELECTION+'end',
@@ -434,9 +433,7 @@ module.exports = function (window) {
                     alwaysdefault: false,
                     keyup: DEFAULT_KEYUP,
                     keydown: DEFAULT_KEYDOWN,
-                    // keyenter: DEFAULT_ENTER,
-                    // keyleave: DEFAULT_LEAVE,
-                    noloop: 'boolean'
+                    noloop: DEFAULT_NOLOOP
                 }
             });
 

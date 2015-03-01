@@ -113,10 +113,32 @@ module.exports = function (window) {
             // in case sourceNode is an innernode of a selector, we need to start from the selector:
             sourceNode.matches(selector) || (sourceNode=sourceNode.inside(selector));
             if (downwards) {
-                nodeHit = sourceNode.next(selector, focusContainerNode) || (noloop ? sourceNode.last(selector, focusContainerNode) : sourceNode.first(selector, focusContainerNode));
+                nodeHit = sourceNode;
+/*jshint noempty:true */
+                while ((nodeHit=nodeHit.next(selector, focusContainerNode)) && (nodeHit.getStyle('display')==='none')) {}
+/*jshint noempty:false */
+                if (!nodeHit) {
+                    nodeHit = noloop ? sourceNode.last(selector, focusContainerNode) : sourceNode.first(selector, focusContainerNode);
+                    if (nodeHit.getStyle('display')==='none') {
+/*jshint noempty:true */
+                        while ((nodeHit=nodeHit[noloop ? 'previous' : 'next'](selector, focusContainerNode)) && (nodeHit.getStyle('display')==='none')) {}
+/*jshint noempty:false */
+                    }
+                }
             }
             else {
-                nodeHit = sourceNode.previous(selector, focusContainerNode) || (noloop ? sourceNode.first(selector, focusContainerNode) : sourceNode.last(selector, focusContainerNode));
+                nodeHit = sourceNode;
+/*jshint noempty:true */
+                while ((nodeHit=nodeHit.previous(selector, focusContainerNode)) && (nodeHit.getStyle('display')==='none')) {}
+/*jshint noempty:false */
+                if (!nodeHit) {
+                    nodeHit = noloop ? sourceNode.first(selector, focusContainerNode) : sourceNode.last(selector, focusContainerNode);
+                    if (nodeHit.getStyle('display')==='none') {
+/*jshint noempty:true */
+                        while ((nodeHit=nodeHit[noloop ? 'next' : 'previous'](selector, focusContainerNode)) && (nodeHit.getStyle('display')==='none')) {}
+/*jshint noempty:false */
+                    }
+                }
             }
             if (nodeHit===sourceNode) {
                 // cannot found another, return itself, BUT return `initialSourceNode` if it is available
@@ -243,7 +265,7 @@ module.exports = function (window) {
                 if (!focusNode) {
                     // check for keyenter, but only when e.target equals a focusmanager:
                     if (sourceNode.matches('[plugin-fm="true"]')) {
-                        actionkey = focusContainerNode._plugin.fm.model.keyenter;
+                        actionkey = sourceNode._plugin.fm.model.keyenter;
                         if (actionkey) {
                             keys = actionkey.split('+');
                             len = keys.length;

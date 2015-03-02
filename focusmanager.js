@@ -2,6 +2,7 @@
 
 require('js-ext/lib/object.js');
 require('polyfill');
+require('./css/focusmanager.css');
 
 /**
  *

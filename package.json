@@ -23,6 +23,12 @@
     "engines": {
         "node": "*"
     },
+    "browserify": {
+        "transform": ["cssify"]
+    },
+    "directories": {
+        "css": "./css"
+    },
     "dependencies": {
         "vdom": "itsa/vdom",
         "event-mobile":"itsa/event-mobile",

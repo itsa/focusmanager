@@ -319,7 +319,6 @@ module.exports = function (window) {
                 }
                 if (focusNode) {
                     e.preventDefaultContinue();
-                    e.preventRender(); // don't double render --> focus does this
                     // prevent default action --> we just want to re-focus, but we DO want afterlisteners
                     // to be handled in the after-listener: someone else might want to halt the keydown event.
                     e._focusNode = focusNode;
@@ -331,7 +330,6 @@ module.exports = function (window) {
             console.log(NAME+'after keydown-event');
             var focusNode = e._focusNode;
             if (focusNode && focusNode.focus) {
-                e.preventRender(); // don't double render --> focus does this
                 focusNode.focus();
             }
         });
@@ -369,7 +367,6 @@ module.exports = function (window) {
             console.log(NAME+'after focus-event');
             var node = e.target;
             if (!node.hasFocus()) {
-                e.preventRender(); // don't double render --> focus does this
                 node.focus();
             }
         }, 'button');
@@ -392,7 +389,6 @@ module.exports = function (window) {
                     markAsFocussed(focusContainerNode, focusNode);
                 }
                 else {
-                    e.preventRender(); // don't double render --> let focus do this
                     focusNode.focus();
                 }
             }
@@ -477,7 +473,7 @@ module.exports = function (window) {
     (function(HTMLElementPrototype) {
 
         HTMLElementPrototype._focus = HTMLElementPrototype.focus;
-        HTMLElementPrototype.focus = function(noRender, noRefocus) {
+        HTMLElementPrototype.focus = function(noRefocus) {
             console.log(NAME+'focus');
             /**
              * In case of a manual focus (node.focus()) the node will fire an `manualfocus`-event
@@ -490,7 +486,7 @@ module.exports = function (window) {
                 var emitterName = focusNode._emitterName,
                     customevent = emitterName+':manualfocus';
                 Event._ce[customevent] || defineFocusEvent(customevent);
-                focusNode.emit('manualfocus', noRender ? {_noRender: true} : null);
+                focusNode.emit('manualfocus');
             };
             if (noRefocus) {
                 doEmit(focusElement);

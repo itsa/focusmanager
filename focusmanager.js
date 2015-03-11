@@ -424,7 +424,7 @@ module.exports = function (window) {
                 if (sourceNode.matches(selector)) {
                     // cautious: fm-selectionstart can be 0 --> which would lead into a falsy value
                     selectionStart = sourceNode.getAttr(FM_SELECTION_START);
-                    (selectionStart===undefined) && (selectionStart=sourceNode.getValue().length);
+                    (selectionStart===null) && (selectionStart=sourceNode.getValue().length);
                     selectionEnd = Math.max(sourceNode.getAttr(FM_SELECTION_END) || selectionStart, selectionStart);
                     sourceNode.selectionEnd = selectionEnd;
                     sourceNode.selectionStart = selectionStart;

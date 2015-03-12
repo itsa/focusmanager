@@ -426,6 +426,8 @@ module.exports = function (window) {
                     selectionStart = sourceNode.getAttr(FM_SELECTION_START);
                     (selectionStart===null) && (selectionStart=sourceNode.getValue().length);
                     selectionEnd = Math.max(sourceNode.getAttr(FM_SELECTION_END) || selectionStart, selectionStart);
+console.warn('selectionStart: '+selectionStart);
+console.warn('selectionEnd: '+selectionEnd);
                     sourceNode.selectionEnd = selectionEnd;
                     sourceNode.selectionStart = selectionStart;
                     markAsFocussed(focusContainerNode, sourceNode);
